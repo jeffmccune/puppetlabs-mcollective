@@ -10,26 +10,23 @@
 #
 # Sample Usage:
 #
-define mcollective::pkg(
-  $version = 'UNSET',
-  $ensure  = 'present'
-) {
+class mcollective::pkg(
+  $pkg_provider = $mcollective::params::pkg_provider,
+  $pkg_state    = $mcollective::params::pkg_state
+) inherits mcollective::params {
 
-  # FIXME Should validate
-  $version_real = $version ? {
-    'UNSET' => 'installed',
-    default => $version,
+  case $operatingsystem {
+    debian,ubuntu: {
+      class { 'mcollective::pkg::debian':
+        pkg_provider => $pkg_provider,
+        pkg_state    => $pkg_state,
+      }
+    }
+    centos,redhat,fedora: {
+      class { 'mcollective::pkg::redhat':
+        pkg_provider => $pkg_provider,
+        pkg_state    => $pkg_state,
+      }
+    }
   }
-
-  $v_ensure = [ 'present', 'absent' ]
-  validate_re($ensure, $v_ensure)
-  $ensure_real = $ensure ? {
-    'present' => $version_real,
-    'absent'  => 'absent',
-  }
-
-  package { $name:
-    ensure => $ensure_real,
-  }
-
 }
