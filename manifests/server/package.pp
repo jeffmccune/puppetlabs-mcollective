@@ -19,13 +19,6 @@ class mcollective::server::package(
   $pkg_provider
 ) {
 
-  #include 'mcollective::package'
-
-  package { 'mcollective':
-    ensure	  => $version,
-    provider  => $pkg_provider,
-  }
-
   case $operatingsystem {
     debian,ubuntu: {
       class { 'mcollective::server::package::debian':
