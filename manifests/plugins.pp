@@ -64,6 +64,12 @@ class mcollective::plugins(
     ddl         => true,
     application => false,
   }
+  mcollective::plugins::plugin { 'agentlist':
+    ensure      => present,
+    type        => 'registration',
+    ddl         => false,
+    application => false,
+  }
   mcollective::plugins::plugin { 'meta':
     ensure      => present,
     type        => 'registration',
