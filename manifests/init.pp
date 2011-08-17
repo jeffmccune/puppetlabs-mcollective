@@ -53,23 +53,25 @@
 # }
 #
 class mcollective(
-  $version               = 'UNSET',
-  $manage_packages       = true,
-  $manage_plugins        = false,
-  $server                = true,
-  $server_config         = 'UNSET',
-  $server_config_file    = '/etc/mcollective/server.cfg',
-  $client                = false,
-  $client_config         = 'UNSET',
-  $client_config_file    = '/etc/mcollective/client.cfg',
-  $stomp_server          = $mcollective::params::stomp_server,
-  $stomp_port            = '61613',
-  $mc_security_provider  = $mcollective::params::mc_security_provider,
-  $mc_security_psk       = $mcollective::params::mc_security_psk
+  $version              = 'UNSET',
+  $enterprise           = false,
+  $manage_packages      = true,
+  $manage_plugins       = false,
+  $server               = true,
+  $server_config        = 'UNSET',
+  $server_config_file   = '/etc/mcollective/server.cfg',
+  $client               = false,
+  $client_config        = 'UNSET',
+  $client_config_file   = '/etc/mcollective/client.cfg',
+  $stomp_server         = $mcollective::params::stomp_server,
+  $stomp_port           = '61613',
+  $mc_security_provider = $mcollective::params::mc_security_provider,
+  $mc_security_psk      = $mcollective::params::mc_security_psk
 ) inherits mcollective::params {
 
   $v_bool = [ '^true$', '^false$' ]
   validate_bool($manage_packages)
+  validate_bool($enterprise)
   validate_bool($manage_plugins)
   validate_re($server_config_file, '^/')
   validate_re($client_config_file, '^/')
@@ -86,6 +88,12 @@ class mcollective(
   $stomp_server_real         = $stomp_server
   $mc_security_provider_real = $mc_security_provider
   $mc_security_psk_real      = $mc_security_psk
+
+  # Service Name:
+  $service_name = $enterprise ? {
+    true  => 'pe-mcollective',
+    false => 'mcollective',
+  }
 
   if $version == 'UNSET' {
       $version_real = 'present'
@@ -111,7 +119,9 @@ class mcollective(
   if $server_real {
     class { 'mcollective::server::base':
       version         => $version_real,
+      enterprise      => $enterprise,
       manage_packages => $manage_packages,
+      service_name    => $service_name,
       config          => $server_config_real,
       config_file     => $server_config_file_real,
       require         => Anchor['mcollective::begin'],

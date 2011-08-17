@@ -22,7 +22,6 @@ class mcollective::server::service(
 
   service { $mc_service_name:
     ensure    => running,
-    enable    => false,
     hasstatus => true,
     start     => $mc_service_start,
     stop      => $mc_service_stop,
