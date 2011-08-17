@@ -41,8 +41,8 @@ class mcollective::server::base(
   if $enterprise {
     class { 'mcollective::server::service':
       mc_service_name  => $service_name,
-      mc_service_stop  => undef,
-      mc_service_start => undef,
+      mc_service_stop  => false,
+      mc_service_start => false,
       subscribe        => Class['mcollective::server::config'],
       before           => Anchor['mcollective::end'],
     }
