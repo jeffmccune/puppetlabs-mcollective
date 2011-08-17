@@ -54,6 +54,8 @@
 #
 class mcollective(
   $version               = 'UNSET',
+  $manage_packages       = true,
+  $manage_plugins        = false,
   $server                = true,
   $server_config         = 'UNSET',
   $server_config_file    = '/etc/mcollective/server.cfg',
@@ -61,11 +63,14 @@ class mcollective(
   $client_config         = 'UNSET',
   $client_config_file    = '/etc/mcollective/client.cfg',
   $stomp_server          = $mcollective::params::stomp_server,
+  $stomp_port            = '61613',
   $mc_security_provider  = $mcollective::params::mc_security_provider,
   $mc_security_psk       = $mcollective::params::mc_security_psk
 ) inherits mcollective::params {
 
   $v_bool = [ '^true$', '^false$' ]
+  validate_bool($manage_packages)
+  validate_bool($manage_plugins)
   validate_re($server_config_file, '^/')
   validate_re($client_config_file, '^/')
   validate_re("$server", $v_bool)
@@ -105,15 +110,18 @@ class mcollective(
 
   if $server_real {
     class { 'mcollective::server::base':
-      version     => $version_real,
-      config      => $server_config_real,
-      config_file => $server_config_file_real,
-      require     => Anchor['mcollective::begin'],
+      version         => $version_real,
+      manage_packages => $manage_packages,
+      config          => $server_config_real,
+      config_file     => $server_config_file_real,
+      require         => Anchor['mcollective::begin'],
     }
     # Also manage the plugins
-    class { 'mcollective::plugins':
-      require => Class['mcollective::server::base'],
-      before  => Anchor['mcollective::end'],
+    if $manage_plugins {
+      class { 'mcollective::plugins':
+        require => Class['mcollective::server::base'],
+        before  => Anchor['mcollective::end'],
+      }
     }
   }
 
